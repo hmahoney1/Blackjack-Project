@@ -21,6 +21,12 @@ const BlackjackGame = () => {
   const [balance, setBalance] = useState(200); // Initial balance
   const [bet, setBet] = useState(10); // Initial bet
 
+  // for card animations:
+  const [animatedCard, setAnimatedCard] = useState(null); // Card to animate
+  const [cardPosition, setCardPosition] = useState({ x: "-100%", y: "50%" }); // Initial position
+  const [isAnimating, setIsAnimating] = useState(false); // Animation state
+
+
   useEffect(() => {
     startGame();
   }, []);
@@ -40,12 +46,20 @@ const BlackjackGame = () => {
     setDealerTotal((dealerStart[0].value));
   };
 
-  const hit = () => {
+  const hitStart = () => {
     const newDeck = [...deck];
     const newCard = dealCard(newDeck);
-    const newPlayerHand = [...playerHand, newCard];
-
     setDeck(newDeck);
+
+    animateCard(newCard, 'player');
+    setTimeout(() => {
+      hit(newCard);
+    }, 1600);
+  };
+
+  const hit = (newCard) => {
+
+    const newPlayerHand = [...playerHand, newCard];
     setPlayerHand(newPlayerHand);
 
     const value = calculateHandValue(newPlayerHand);
@@ -57,14 +71,28 @@ const BlackjackGame = () => {
     }
   };
 
+  const animateCard = (card, person) => {
+    setAnimatedCard(card);
+    setCardPosition({x: "50%", y: "0%" });
+    setIsAnimating(true);
+
+    setTimeout(() => {
+      if (person === 'dealer') {
+        setCardPosition({ x: "50%", y: "30%" });
+      } else if (person === 'player') {
+        setCardPosition({ x: "50%", y: "60%" });
+      }
+    }, 100);
+
+    setTimeout(() => {
+      setIsAnimating(false);
+      setAnimatedCard(null);
+    }, 1600)
+  }
+
   const betUp = () => {
     setBet(bet + 10); // Increase bet by 10
     setBalance(balance - 10); // Decrease balance by 10
-  }
-
-  const clearBets = () => {
-    setBalance(balance + bet); // Add bet back to balance
-    setBet(0); // Reset bet to 0
   }
 
   const stand = () => {
@@ -103,14 +131,129 @@ const BlackjackGame = () => {
     setMessage(outcome);
     setGameOver(true);
   };
+  // const clearBets = () => {
+  //   setBalance(balance + bet); // Add bet back to balance
+  //   setBet(0); // Reset bet to 0
+  // }
+{/*}
+  const stand = () => {
+    setPlayerTurnOver(true);
+
+    let newDeck = [...deck];
+    let newDealerHand = [...dealerHand];
+
+    if (calculateHandValue(newDealerHand) < 17) {
+      dealerHitStart();
+    } else {
+      dealerDone();
+    }
+  };
+*/}
+  const dealerDone = () => {
+
+    let newDealerHand = [...dealerHand];
+
+    const playerValue = calculateHandValue(playerHand);
+    const dealerValue = calculateHandValue(newDealerHand);
+
+    setDealerTotal(dealerValue);
+
+    let outcome = "";
+    if (dealerValue > 21 || playerValue > dealerValue) {
+      outcome = "You win!";
+      setBalance(balance + bet * 2); // Win: double the bet
+    } else if (dealerValue < playerValue) {
+      outcome = "You win!";
+      setBalance(balance + bet * 2); // Win: double the bet
+    } else if (dealerValue > playerValue) {
+      outcome = "Dealer wins.";
+    } else {
+      outcome = "Push (tie).";
+      setBalance(balance + bet); // Push: return the bet
+    }
+    setBet(0);
+
+    let newDeck = [...deck];
+
+    setDeck(newDeck);
+    setDealerHand(newDealerHand);
+    setMessage(outcome);
+    setGameOver(true);
+  };
+
+  {/*}
+  const dealerHit = () => {
+    let newDeck = [...deck];
+    let newDealerHand = [...dealerHand];
+    
+    const newCard = dealCard(newDeck);
+  
+    animateCard(newCard, 'dealer');
+    newDealerHand.push(newCard);
+    let value = calculateHandValue(newDealerHand);
+
+    dealerHit1(newCard);
+
+  };
+  
+  const dealerHit1 = (newCard) => {
+    setTimeout(() => {
+      let newDealerHand = [...dealerHand]
+      newDealerHand.push(newCard);
+      setDealerHand(newDealerHand);
+      setDealerTotal(calculateHandValue(dealerHand));
+
+      const dealerTotal = calculateHandValue(dealerHand);
+      if (dealerTotal < 17) {
+        dealerHit();
+        console.log("Dealer hits again. Total: " + value);
+      } else {
+        dealerDone();
+        console.log("Dealer is done. Final total: " + value);
+      }
+    }, 1600);
+  } */}
+
+  {/* 
+  const dealerHitStart = () => {
+    const newDeck = [...deck];
+    const newCard = dealCard(newDeck);
+    setDeck(newDeck);
+
+    console.log("Dealer hits before animation. New card: " + newCard1);
+    animateCard(newCard, 'dealer');
+    setTimeout(() => {
+      dealerHit(newCard);
+    }, 1600);
+  };
+
+  const dealerHit = (newCard) => {
+
+    const newDealerHand = [...dealerHand, newCard];
+    console.log("Dealer hits. New card: " + newCard);
+    setDealerHand(newDealerHand);
+
+    const value = calculateHandValue(newDealerHand);
+    setDealerTotal(value);
+    if (value >= 17) {
+      dealerDone();
+    } else {
+      dealerHitStart();
+    }
+  };
+
+*/}
 
   const renderCard = (card, hidden = false) => {
     if (hidden) {
       return (
-        <div
-          className="w-16 sm:w-20 h-auto rounded shadow-md bg-gray-600"
-          style={{ backgroundColor: '#808080' }} // Grey background
-        ></div>
+        <div>
+          <img
+            src={'/cardpics/back.png'}
+            alt={`Face Down Card`}
+            className="w-16 sm:w-20 h-29 rounded shadow-md"
+          />
+        </div>
       );
     }
   
@@ -135,7 +278,7 @@ const BlackjackGame = () => {
       <img
         src={imagePath}
         alt={`${card.rank} of ${card.suit}`}
-        className="w-16 sm:w-20 h-auto rounded shadow-md"
+        className="w-16 sm:w-20 h-auto rounded shadow-lg"
       />
     );
   };
@@ -143,17 +286,17 @@ const BlackjackGame = () => {
 
   return (
     <div
-      className="text-white p-4 flex flex-col justify-center items-center"
+      className="text-white p-4 flex flex-col justify-start items-center"
       style={backgroundImageStyle}
     >
       {/* Title */}
       <img
-  src="/blackjacklogo.avif"
-  alt="Blackjack Logo"
-  className="w-64 h-auto mb-6 drop-shadow-lg"
-/>
+        src="/blackjacklogo.png"
+        alt="Blackjack Logo"
+        className="w-50 h-auto drop-shadow-lg"
+      />
 
-      <div className="mb-4 text-white text-lg font-semibold drop-shadow">
+      <div className="text-white text-lg font-semibold drop-shadow">
         Balance: ${balance}
       </div>
 
@@ -175,12 +318,26 @@ const BlackjackGame = () => {
         {playerHand.map((card) => renderCard(card))}
       </div>
 
+      {isAnimating && animatedCard && (
+        <div
+          style={{
+            position: "absolute",
+            top: cardPosition.y,
+            left: cardPosition.x,
+            transform: "translate(-50%, -50%)",
+            transition: "all 1s ease",
+          }}
+        >
+          {renderCard(animatedCard)}
+        </div>
+      )}
+
       {/* Game Buttons */}
       <div className="flex justify-center gap-4 mb-6">
         {!gameOver && (
           <>
             <button
-              onClick={hit}
+              onClick={hitStart}
               className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded shadow"
             >
               Hit
