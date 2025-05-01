@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createDeck, shuffleDeck, dealCard } from "../utils/deck";
+import Image from 'next/image';
 
 const backgroundImageStyle = {
   backgroundImage: "url('/felt.jpg')",
@@ -248,11 +249,14 @@ const BlackjackGame = () => {
     if (hidden) {
       return (
         <div>
-          <img
-            src={'/cardpics/back.png'}
-            alt={`Face Down Card`}
-            className="w-16 sm:w-20 h-29 rounded shadow-md"
-          />
+          <Image
+  src="/cardpics/back.png"
+  alt="Face Down Card"
+  width={80}
+  height={115}
+  className="w-16 sm:w-20 h-29 rounded shadow-md"
+  unoptimized
+/>
         </div>
       );
     }
@@ -275,11 +279,14 @@ const BlackjackGame = () => {
     const imagePath = `/cardpics/${filename}`;
   
     return (
-      <img
-        src={imagePath}
-        alt={`${card.rank} of ${card.suit}`}
-        className="w-16 sm:w-20 h-auto rounded shadow-lg"
-      />
+      <Image
+  src={imagePath}
+  alt={`${card.rank} of ${card.suit}`}
+  width={80}
+  height={115}
+  className="w-16 sm:w-20 h-auto rounded shadow-lg"
+  unoptimized
+/>
     );
   };
   
@@ -290,11 +297,14 @@ const BlackjackGame = () => {
       style={backgroundImageStyle}
     >
       {/* Title */}
-      <img
-        src="/blackjacklogo.png"
-        alt="Blackjack Logo"
-        className="w-50 h-auto drop-shadow-lg"
-      />
+      <Image
+  src="/blackjacklogo.png"
+  alt="Blackjack Logo"
+  width={200} // estimate based on w-50, you can adjust
+  height={80} // estimate based on aspect ratio
+  className="w-50 h-auto drop-shadow-lg"
+  unoptimized
+/>
 
       <div className="text-white text-lg font-semibold drop-shadow">
         Balance: ${balance}
